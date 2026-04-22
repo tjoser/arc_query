@@ -1,0 +1,29 @@
+name: arc_query
+description: "A lightweight async data toolkit for Flutter with loading, error, cache, refresh, retry, and pagination."
+version: 0.1.0
+repository: https://github.com/tjoser/arc_query
+homepage: https://github.com/tjoser/arc_query
+issue_tracker: https://github.com/tjoser/arc_query/issues
+topics:
+  - flutter
+  - async
+  - caching
+  - pagination
+  - query
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+flutter:
