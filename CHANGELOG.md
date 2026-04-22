@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Added comprehensive dartdoc comments across the public API.
+- Improved package documentation quality for pub.dev.
+
 ## 0.1.0
 
 - Initial release of `arc_query`.

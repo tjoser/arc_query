@@ -5,7 +5,9 @@ import '../controllers/query_controller.dart';
 import '../core/query_state.dart';
 import '../utils/typedefs.dart';
 
+/// A lightweight asynchronous query with caching and retry support.
 class Query<T> extends ChangeNotifier {
+  /// Creates a query that loads data with [fetcher] and stores results by [key].
   Query({
     required this.key,
     required QueryFetcher<T> fetcher,
@@ -29,31 +31,68 @@ class Query<T> extends ChangeNotifier {
     this.controller.register(this);
   }
 
+  /// The cache key used for storing and invalidating this query.
   final String key;
+
+  /// How long a cached result should be treated as fresh.
   final Duration staleDuration;
+
+  /// Whether refresh operations should keep the previous data visible.
   final bool keepPreviousDataOnRefresh;
+
+  /// The controller that manages this query and its cache.
   final QueryController controller;
   final QueryFetcher<T> _fetcher;
 
   QueryState<T> _state;
   Future<void>? _activeRequest;
 
+  /// The current immutable state snapshot.
   QueryState<T> get state => _state;
 
+  /// Whether the query is actively loading, refreshing, or fetching more.
   bool get isLoading => state.isLoading;
+
+  /// Whether the query is refreshing previously loaded data.
   bool get isRefreshing => state is QueryRefreshing<T>;
+
+  /// Whether the query is appending another page.
   bool get isFetchingMore => state is QueryFetchingMore<T>;
+
+  /// Whether the current state contains an error.
   bool get hasError => state.hasError;
+
+  /// Whether the current state contains data.
   bool get hasData => state.hasData;
+
+  /// Whether the query has not executed yet.
   bool get isIdle => state is QueryIdle<T>;
+
+  /// Whether the current data is stale.
   bool get isStale => state.isStale;
+
+  /// The current data value, if available.
   T? get data => state.data;
+
+  /// The current error value, if available.
   Object? get error => state.error;
+
+  /// The stack trace captured from the latest error.
   StackTrace? get stackTrace => state.stackTrace;
+
+  /// The last successful update time.
   DateTime? get updatedAt => state.updatedAt;
+
+  /// The number of failed attempts since the last success.
   int get attempt => state.attempt;
+
+  /// Whether more pages can be loaded. Always `false` for non-paginated queries.
   bool get hasMore => false;
 
+  /// Executes the query.
+  ///
+  /// When cached data is still fresh, this may resolve from cache unless
+  /// [force] is `true`.
   Future<void> execute({bool force = false}) {
     return _run(
       force: force,
@@ -61,6 +100,7 @@ class Query<T> extends ChangeNotifier {
     );
   }
 
+  /// Forces a refetch while keeping previous data when configured.
   Future<void> refresh() {
     return _run(
       force: true,
@@ -68,6 +108,7 @@ class Query<T> extends ChangeNotifier {
     );
   }
 
+  /// Re-runs the query after an error.
   Future<void> retry() {
     return _run(
       force: true,
@@ -75,10 +116,14 @@ class Query<T> extends ChangeNotifier {
     );
   }
 
+  /// Loads the next page.
+  ///
+  /// This is only supported by [PaginatedQuery].
   Future<void> fetchMore() {
     throw StateError('fetchMore() is only supported by PaginatedQuery.');
   }
 
+  /// Marks the query state as stale without removing its current data.
   void markStale() {
     final currentData = data;
     if (currentData != null) {
@@ -102,8 +147,10 @@ class Query<T> extends ChangeNotifier {
     );
   }
 
+  /// Returns the cached entry for this query key, if present.
   CachedQuery<T>? readCache() => controller.cache.get<T>(key);
 
+  /// Returns whether the cache entry updated at [updatedAt] is stale.
   bool isCacheStale(DateTime updatedAt) {
     if (staleDuration == Duration.zero) {
       return false;
@@ -111,6 +158,7 @@ class Query<T> extends ChangeNotifier {
     return DateTime.now().difference(updatedAt) > staleDuration;
   }
 
+  /// Stores [data] in the cache with pagination metadata when provided.
   void writeCache({
     required T data,
     required DateTime updatedAt,
@@ -129,11 +177,16 @@ class Query<T> extends ChangeNotifier {
   }
 
   @override
+
+  /// Disposes the query and unregisters it from its controller.
   void dispose() {
     controller.unregister(this);
     super.dispose();
   }
 
+  /// Performs the actual data fetch.
+  ///
+  /// Subclasses like [PaginatedQuery] can override this.
   Future<T> fetch() => _fetcher();
 
   static Future<S> _unsupportedFetcher<S>() async {
@@ -141,6 +194,8 @@ class Query<T> extends ChangeNotifier {
   }
 
   @protected
+
+  /// Updates the current query state and notifies listeners.
   void setQueryState(QueryState<T> state, {bool allowEmptyData = false}) {
     _setState(state, allowEmptyData: allowEmptyData);
   }

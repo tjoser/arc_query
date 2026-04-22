@@ -1,10 +1,13 @@
+// ignore_for_file: use_super_parameters
+
 import '../controllers/query_controller.dart';
 import '../core/query_state.dart';
 import '../utils/typedefs.dart';
 import 'query.dart';
 
+/// A list-focused query with built-in page loading and merge behavior.
 class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
-  // ignore: use_super_parameters
+  /// Creates a paginated query.
   PaginatedQuery({
     required String key,
     required this.initialPageParam,
@@ -21,17 +24,24 @@ class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
           keepPreviousDataOnRefresh: keepPreviousDataOnRefresh,
         );
 
+  /// The first page parameter used for initial loads and refreshes.
   final TPageParam initialPageParam;
   final PageFetcher<TItem, TPageParam> _pageFetcher;
+
+  /// An optional custom page merge function.
   final PageMerger<List<TItem>>? merge;
 
   TPageParam? _nextPageParam;
   bool _hasMore = false;
 
   @override
+
+  /// Whether another page can be fetched.
   bool get hasMore => _hasMore;
 
   @override
+
+  /// Loads the first page.
   Future<List<TItem>> fetch() async {
     final page = await _pageFetcher(initialPageParam);
     _nextPageParam = page.nextPageParam;
@@ -40,6 +50,8 @@ class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
   }
 
   @override
+
+  /// Executes the paginated query, hydrating pagination metadata from cache.
   Future<void> execute({bool force = false}) async {
     final cached = readCache();
     final cacheIsFresh =
@@ -60,6 +72,8 @@ class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
   }
 
   @override
+
+  /// Refreshes the first page and resets pagination metadata from cache.
   Future<void> refresh() async {
     await super.refresh();
     final refreshedCache = readCache();
@@ -70,6 +84,8 @@ class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
   }
 
   @override
+
+  /// Fetches the next page and appends it to the current list.
   Future<void> fetchMore() async {
     if (isFetchingMore || !_hasMore || _nextPageParam == null) {
       return;
@@ -121,6 +137,8 @@ class PaginatedQuery<TItem, TPageParam> extends Query<List<TItem>> {
   }
 
   @override
+
+  /// Writes the merged list and pagination metadata to cache.
   void writeCache({
     required List<TItem> data,
     required DateTime updatedAt,

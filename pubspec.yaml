@@ -1,6 +1,6 @@
 name: arc_query
 description: "A lightweight async data toolkit for Flutter with loading, error, cache, refresh, retry, and pagination."
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/tjoser/arc_query
 homepage: https://github.com/tjoser/arc_query
 issue_tracker: https://github.com/tjoser/arc_query/issues
